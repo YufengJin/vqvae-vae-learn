@@ -1,0 +1,44 @@
+# VQ-VAE / VAE training config
+# 多实验时不切换工作目录，避免 data/results 路径错误
+hydra:
+  job:
+    chdir: false
+# Override from CLI (Hydra syntax): python main.py batch_size=64 model=vae debug=true
+# Example: python main.py model=vae dataset=CIFAR10 n_steps=1000 debug=true cpu=true
+#
+# 多实验 (multirun): 加 -m 或 --multirun，逗号分隔多值
+# python main.py -m model=vae,vqvae
+# python main.py -m model=vae,vqvae embedding_dim=32,64
+# python main.py -m model=vae,vqvae n_embeddings=256,512
+
+# model
+model: vqvae  # vqvae | vae
+n_hiddens: 128
+n_residual_hiddens: 32
+n_residual_layers: 2
+embedding_dim: 64
+n_embeddings: 512
+beta: 0.25
+
+# training
+# n_steps: total training steps; when exceeds dataset size, reshuffle and continue
+# CIFAR10: 50k/32≈1563 per epoch; 10000 steps≈6 epochs
+n_steps: 100000
+batch_size: 512
+learning_rate: 0.0003
+log_interval: 100   # log every 100 steps
+eval_interval: 1000  # eval on val/test every 1000 steps
+
+# data
+dataset: CIFAR10
+data_root: null
+
+# io
+save: false
+filename: null  # auto timestamp if null
+debug: false
+cpu: false
+
+# wandb
+wandb_project: vae_ablation
+wandb_run: null
