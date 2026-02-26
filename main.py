@@ -5,6 +5,7 @@ import torch.nn as nn
 import torch.optim as optim
 from omegaconf import OmegaConf
 import hydra
+from hydra.core.hydra_config import HydraConfig
 
 import utils
 from models.vqvae import VQVAE
@@ -19,7 +20,8 @@ def run(cfg):
 
     if cfg.save:
         prefix = "vae" if cfg.model == "vae" else "vqvae"
-        print(f'Results will be saved in ./results/{prefix}_{cfg.filename}.pth', flush=True)
+        save_dir = cfg.output_dir if hasattr(cfg, 'output_dir') and cfg.output_dir else './results'
+        print(f'Results will be saved in {save_dir}/{prefix}_data_{cfg.filename}.pth', flush=True)
 
     print('Loading data...', flush=True)
     training_data, validation_data, training_loader, validation_loader, test_loader, x_train_var = utils.load_data_and_data_loaders(
@@ -104,7 +106,8 @@ def run(cfg):
 
             if cfg.save and step % cfg.log_interval == 0:
                 hp = OmegaConf.to_container(cfg, resolve=True)
-                utils.save_model_and_results(model, results, hp, cfg.filename, model_type=cfg.model)
+                output_dir = getattr(cfg, 'output_dir', None)
+                utils.save_model_and_results(model, results, hp, cfg.filename, model_type=cfg.model, output_dir=output_dir)
 
             log_print(f'Step #{step}  Recon: {avg_recon:.4f}  Loss: {avg_loss:.4f}  {aux_name}: {avg_aux:.4f}')
 
@@ -134,10 +137,15 @@ def run(cfg):
                 log_dict["images/origin_recon"] = [wandb.Image(np.hstack([combined[0, k], combined[1, k]]), caption=f"left: origin, right: recon #{k}") for k in range(n_vis)]
                 wandb.log(log_dict)
 
+    if use_wandb:
+        wandb.finish()
+
 
 if __name__ == "__main__":
     @hydra.main(config_path="conf", config_name="config", version_base=None)
     def main(cfg):
         OmegaConf.resolve(cfg)
+        OmegaConf.set_struct(cfg, False)
+        cfg.output_dir = HydraConfig.get().runtime.output_dir
         run(cfg)
     main()

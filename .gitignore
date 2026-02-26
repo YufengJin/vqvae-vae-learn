@@ -1,7 +1,10 @@
 data/
-__pycache__
+__pycache__/
+*.pyc
 .vscode/
-**.swp 
+.idea/
+*.swp
+*.swo
 playground*
 results/
 .ipynb_checkpoints/
@@ -10,4 +13,12 @@ samples/
 wandb/
 outputs/
 multirun/
+
+# Model checkpoints & logs
+*.pth
+*.pt
+*.log
+
+# uv
+.venv/
 

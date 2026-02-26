@@ -7,40 +7,76 @@ This project is a PyTorch implementation of **VQ-VAE (Vector Quantized Variation
 
 ## Installation
 
+This project uses [uv](https://docs.astral.sh/uv/) for dependency management. Requires Python ≥3.10.
+
+### 1. Install uv (if not installed)
+
 ```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+# or: pip install uv
+```
+
+### 2. Install dependencies
+
+```bash
+cd vqvae-vae-learn
+uv sync
+```
+
+`uv sync` creates `.venv`, installs all dependencies from `pyproject.toml`, and generates/updates `uv.lock`.
+
+### 3. Verify installation
+
+```bash
+uv run python -c "import torch, hydra, wandb; print('OK')"
+```
+
+**Alternative: use pip**
+
+```bash
+uv export -o requirements.txt   # export from uv.lock
 pip install -r requirements.txt
+# then use python main.py instead of uv run python main.py
+```
+
+## Running commands
+
+All commands should be run via `uv run` to use the project's virtual environment:
+
+```bash
+uv run python main.py <参数>
 ```
 
 ## Training Commands
 
-Uses Hydra configuration. Main config is in `conf/config.yaml`; override via command line.
+Hydra configuration is in `conf/config.yaml`; override via command line.
 
 ### Basic Usage
 
 ```bash
 # VAE training (CIFAR10 default)
-python3 main.py model=vae dataset=CIFAR10 batch_size=64 save=true
+uv run python main.py model=vae dataset=CIFAR10 batch_size=64 save=true
 
 # VQ-VAE training
-python3 main.py model=vqvae dataset=CIFAR10 batch_size=64 save=true
+uv run python main.py model=vqvae dataset=CIFAR10 batch_size=64 save=true
 
 # Quick debug (few steps, CPU, wandb disabled)
-python3 main.py model=vqvae debug=true cpu=true n_steps=1000
+uv run python main.py model=vqvae debug=true cpu=true n_steps=1000
 ```
 
 ### Multirun
 
-Add `-m` or `--multirun`, use comma-separated values to sweep all combinations:
+Add `-m` or `--multirun`; use comma-separated values to sweep parameters:
 
 ```bash
 # Run both VAE and VQ-VAE
-python3 main.py -m model=vae,vqvae n_steps=1000
+uv run python main.py -m model=vae,vqvae n_steps=1000
 
 # Combined sweep: 2 models × 2 embedding_dim = 4 experiments
-python3 main.py -m model=vae,vqvae embedding_dim=32,64 n_steps=5000
+uv run python main.py -m model=vae,vqvae embedding_dim=32,64 n_steps=5000
 
 # Multiple n_embeddings
-python3 main.py -m model=vqvae n_embeddings=256,512,1024
+uv run python main.py -m model=vqvae n_embeddings=256,512,1024
 ```
 
 Output directory: Hydra creates subdirs under `outputs/YYYY-MM-DD/HH-MM-SS/` per run.
@@ -87,7 +123,7 @@ data_root/
 If ImageNet is at `~/localdisk/imagenet/ILSVRC/Data/CLS-LOC`:
 
 ```bash
-python3 main.py dataset=IMAGENET \
+uv run python main.py dataset=IMAGENET \
   data_root=~/localdisk/imagenet/ILSVRC/Data/CLS-LOC \
   save=true batch_size=64 n_steps=50000
 ```
@@ -126,7 +162,7 @@ Workflow:
 4. Run the PixelCNN script
 
 ```bash
-python pixelcnn/gated_pixelcnn.py
+uv run python pixelcnn/gated_pixelcnn.py
 ```
 
 Defaults to `LATENT_BLOCK` dataset; you must first train VQ-VAE and export latent representations.

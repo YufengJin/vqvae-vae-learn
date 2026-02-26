@@ -23,7 +23,7 @@ beta: 0.25
 # training
 # n_steps: total training steps; when exceeds dataset size, reshuffle and continue
 # CIFAR10: 50k/32≈1563 per epoch; 10000 steps≈6 epochs
-n_steps: 100000
+n_steps: 150000
 batch_size: 512
 learning_rate: 0.0003
 log_interval: 100   # log every 100 steps

@@ -179,14 +179,16 @@ def evaluate(model, data_loader, x_train_var, device):
     return np.mean(recon_losses), np.mean(perplexities)
 
 
-def save_model_and_results(model, results, hyperparameters, timestamp, model_type='vqvae'):
-    SAVE_MODEL_PATH = os.getcwd() + '/results'
+def save_model_and_results(model, results, hyperparameters, timestamp, model_type='vqvae', output_dir=None):
+    """Save model and results. If output_dir is None, saves to ./results (legacy)."""
+    save_dir = output_dir if output_dir is not None else (os.getcwd() + '/results')
     prefix = 'vae' if model_type == 'vae' else 'vqvae'
+    os.makedirs(save_dir, exist_ok=True)
 
     results_to_save = {
         'model': model.state_dict(),
         'results': results,
         'hyperparameters': hyperparameters
     }
-    torch.save(results_to_save,
-               SAVE_MODEL_PATH + '/' + prefix + '_data_' + timestamp + '.pth')
+    save_path = os.path.join(save_dir, prefix + '_data_' + timestamp + '.pth')
+    torch.save(results_to_save, save_path)
